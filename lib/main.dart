@@ -1,17 +1,14 @@
 import 'package:flutter/foundation.dart';
+import 'dart:collection';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:app_settings/app_settings.dart';
 import 'package:awesome_notifications/android_foreground_service.dart';
 import 'package:auto_orientation/auto_orientation.dart';
-
-final InAppLocalhostServer localhostServer =
-    InAppLocalhostServer(documentRoot: 'assets', port: 18191);
+import 'package:flutter/services.dart' show rootBundle;
 
 const isDev = kDebugMode;
 const notificationId = 10;
@@ -20,12 +17,6 @@ Future main() async {
 
   if (!isDev && !kIsWeb) {
     // start the localhost server
-
-    try {
-      await localhostServer.start();
-    } catch (e) {
-      debugPrint(e.toString());
-    }
     debugPrint("started");
   }
 
@@ -77,10 +68,21 @@ class NotificationController {
 
 class _MyAppState extends State<MyApp> {
   InAppWebViewController? webViewController;
+  String contents = "";
+  bool isLoading = true;
+  Future<void> loadAsset() async {
+    String userscript = await rootBundle.loadString('assets/userscript.js');
+    // debugPrint("userscript: $contents");
+    setState(() {
+      contents = userscript;
+      isLoading = false;
+    });
+  }
 
   @override
   void initState() {
     debugPrint("kIsWeb: $kIsWeb isDev: $isDev");
+    loadAsset();
     AwesomeNotifications().initialize(
         // 将图标设置为 null 以使用默认应用图标
         null,
@@ -129,6 +131,10 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      // 加载中显示的组件
+      return const CircularProgressIndicator();
+    }
     return WillPopScope(
         onWillPop: () async {
           if (webViewController != null) {
@@ -151,15 +157,26 @@ class _MyAppState extends State<MyApp> {
               child: Column(children: <Widget>[
             Expanded(
               child: InAppWebView(
+                initialUserScripts: UnmodifiableListView<UserScript>([
+                  UserScript(
+                      source: "console.log('start userscript');",
+                      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START),
+                  UserScript(
+                      source: contents,
+                      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END),
+                ]),
                 onWebViewCreated: (controller) {
                   webViewController = controller;
                 },
                 initialSettings: InAppWebViewSettings(
-                  mediaPlaybackRequiresUserGesture: false,
-                  allowBackgroundAudioPlaying: true,
-                  allowsInlineMediaPlayback: true,
-                  // isInspectable: kDebugMode,
-                ),
+                    mediaPlaybackRequiresUserGesture: false,
+                    allowBackgroundAudioPlaying: true,
+                    allowsInlineMediaPlayback: true,
+                    // isInspectable: kDebugMode,
+                    userAgent: Platform.isAndroid
+                        ? 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36'
+                        : 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
+                    contentBlockers: []),
                 initialUrlRequest:
                     URLRequest(url: WebUri("https://m.youtube.com/")),
                 onLoadStart: (controller, url) {
@@ -285,7 +302,7 @@ class _MyAppState extends State<MyApp> {
                   debugPrint('onLoadStop: $url');
 
                   controller.evaluateJavascript(source: '''
-                    let __f__ = 0;
+                    var __f__ = 0;
                     function addMediaEventListeners() {
                       const mediaElements = document.querySelectorAll('video, audio');
                       mediaElements.forEach(media => {
@@ -324,16 +341,4 @@ class _MyAppState extends State<MyApp> {
           // floatingActionButton: favoriteButton(),
         ));
   }
-}
-
-Map<String, String> _parseTxtRecord(String txt) {
-  final Map<String, String> txtMap = {};
-  final List<String> entries = txt.split('\n');
-  for (final entry in entries) {
-    final List<String> keyValue = entry.split('=');
-    if (keyValue.length == 2) {
-      txtMap[keyValue[0]] = keyValue[1];
-    }
-  }
-  return txtMap;
 }
