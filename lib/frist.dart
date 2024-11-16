@@ -60,7 +60,7 @@ class _FirstRouteState extends State<FirstRoute>
             initialUrlRequest: URLRequest(
                 url: isDev
                     ? WebUri("http://localhost:18192/webview/index.html")
-                    : WebUri("http://localhost:18192")),
+                    : WebUri("http://localhost:18192/webview/index.html")),
             onWebViewCreated: (controller) {},
             onLoadStart: (controller, url) {
               debugPrint('onLoadStart: $url');
