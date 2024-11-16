@@ -14,22 +14,13 @@ module.exports = (env, argv) => {
   const isDev = process.env.NODE_ENV !== "production" ? true : false;
   return {
     entry: {
-      // t: './src/test',
-      index: "./src/index",
+      userscript: "./src/userscript",
     },
     // publicPath: '/',
     plugins: [
       new MiniCssExtractPlugin({
         filename: isDev ? "[name].css" : "[name].[contenthash].css", // 使用 contenthash
       }),
-
-      new HtmlWebpackPlugin({
-        title: "video-downloader", // 用于设置生成的HTML文档的标题
-        template: "public/index.html", // 模板文件路径
-      }),
-
-      new CleanWebpackPlugin(),
-      // new Dotenv(),
       new webpack.EnvironmentPlugin({
         NODE_ENV: process.env.NODE_ENV || "development",
         REACT_APP_REMOTE_URL:
@@ -80,7 +71,7 @@ module.exports = (env, argv) => {
     output: {
       filename: isDev ? "[name].js" : "[name].[contenthash].js", // 使用 contenthash 作为文件名的一部分
       chunkFilename: isDev ? "[name].js" : "[name].[contenthash].js", // 对于动态导入的模块
-      path: path.resolve(__dirname, "build"),
+      path: path.resolve(__dirname, "../assets/inject"),
     },
     mode: isDev ? "development" : "production",
     devtool: isDev ? "inline-source-map" : false,

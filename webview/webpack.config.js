@@ -25,7 +25,7 @@ module.exports = (env, argv) => {
 
       new HtmlWebpackPlugin({
         title: "video-downloader", // 用于设置生成的HTML文档的标题
-        template: "public/index.html", // 模板文件路径
+        template: "public/index.html", // 模板文件路径,
       }),
       new FaviconsWebpackPlugin({
         logo: "public/logo.png",

@@ -57,7 +57,8 @@ class _MyAppState extends State<MyApp> {
   String contents = "";
   bool isLoading = true;
   Future<void> loadAsset() async {
-    String userscript = await rootBundle.loadString('assets/userscript.js');
+    String userscript =
+        await rootBundle.loadString('assets/inject/userscript.js');
     // debugPrint("userscript: $contents");
     setState(() {
       contents = userscript;

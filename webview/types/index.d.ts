@@ -12,7 +12,7 @@ interface Window {
   fetchErrorHandler: any;
   injectedRN: boolean;
   MyWebView: any;
-  // clarity: any;
+  dev: any;
 }
 
 declare module "*.png" {
