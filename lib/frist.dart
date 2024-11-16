@@ -20,7 +20,6 @@ class _FirstRouteState extends State<FirstRoute>
   late AnimationController _controller;
   late Animation<double> _animation;
   bool _isHide = true;
-  final MyApp _secondPage = const MyApp(); // 预实例化第二个页面
 
   @override
   void initState() {
@@ -34,20 +33,6 @@ class _FirstRouteState extends State<FirstRoute>
         setState(() {});
       });
     _animation = Tween<double>(begin: 1.0, end: 0.9).animate(_controller);
-  }
-
-  void _onPressed() {
-    // setState(() {
-    //   _isHide = false;
-    // });
-
-    _controller.forward().then((_) {
-      _controller.reverse();
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => _secondPage),
-      );
-    });
   }
 
   @override
@@ -131,7 +116,7 @@ class _FirstRouteState extends State<FirstRoute>
                       _controller.reverse();
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => _secondPage),
+                        MaterialPageRoute(builder: (context) => const MyApp()),
                       );
                     });
                   });

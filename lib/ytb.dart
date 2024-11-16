@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'dart:collection';
 import 'package:flutter/material.dart';
@@ -56,14 +58,31 @@ class _MyAppState extends State<MyApp> {
   InAppWebViewController? webViewController;
   String contents = "";
   bool isLoading = true;
+  bool skipAD = false;
+  bool backPlay = false;
   Future<void> loadAsset() async {
-    String userscript =
-        await rootBundle.loadString('assets/inject/userscript.js');
-    // debugPrint("userscript: $contents");
-    setState(() {
-      contents = userscript;
-      isLoading = false;
-    });
+    String userscript = await rootBundle
+        .loadString('assets/inject/userscript.js', cache: false);
+    // debugPrint("userscript: $userscript");
+    var directory = await getApplicationDocumentsDirectory();
+    File file = File('${directory.path}/data.json');
+
+    if (await file.exists()) {
+      var str = await file.readAsString();
+      // debugPrint("settingJSON: $str");
+      var json = jsonDecode(str);
+      setState(() {
+        contents = userscript;
+        isLoading = false;
+        skipAD = json["skipAD"];
+        backPlay = json["backPlay"];
+      });
+    } else {
+      setState(() {
+        contents = userscript;
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -118,10 +137,11 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    // if (isLoading) {
-    //   // 加载中显示的组件
-    //   return const CircularProgressIndicator();
-    // }
+    if (isLoading) {
+      // 加载中显示的组件
+      return const CircularProgressIndicator();
+    }
+    // debugPrint("isLoading  $isLoading , backPlay: $backPlay");
     return WillPopScope(
         onWillPop: () async {
           if (webViewController != null) {
@@ -148,7 +168,7 @@ class _MyAppState extends State<MyApp> {
                       source: "console.log('start userscript');",
                       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START),
                   UserScript(
-                      source: contents,
+                      source: skipAD ? contents : "",
                       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END),
                 ]),
                 onWebViewCreated: (controller) {
@@ -156,7 +176,7 @@ class _MyAppState extends State<MyApp> {
                 },
                 initialSettings: InAppWebViewSettings(
                     mediaPlaybackRequiresUserGesture: false,
-                    allowBackgroundAudioPlaying: true,
+                    allowBackgroundAudioPlaying: backPlay,
                     allowsInlineMediaPlayback: true,
                     // isInspectable: kDebugMode,
                     userAgent: Platform.isAndroid

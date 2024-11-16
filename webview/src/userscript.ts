@@ -66,6 +66,8 @@ console.log(`YouTube去`);
       if (isFinite(video.duration) && video.currentTime != video.duration) {
         log("跳过广告");
         video.currentTime = video.duration;
+        video.muted = true;
+        return;
       } else {
         console.error("video.duration 不是一个有限的数值, 或者一样");
       }

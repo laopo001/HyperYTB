@@ -42,8 +42,11 @@ window.addEventListener("flutterInAppWebViewPlatformReady", function (event) {
 function isInit() {
   return isFlutterInAppWebViewReady;
 }
-
-main();
+if (window?.flutter_inappwebview?.callHandler == null) {
+  isFlutterInAppWebViewReady = true;
+} else {
+  main();
+}
 
 export { isInit };
 //   window.exposedFetch = async (url, options) => {

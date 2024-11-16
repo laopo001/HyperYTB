@@ -127,6 +127,8 @@ export function Mobile() {
                 >
                   打开YouTube
                 </Button>
+
+                <div className="mt-4 text-red-500">本软件仅供学习使用。</div>
               </div>
             ),
           },
