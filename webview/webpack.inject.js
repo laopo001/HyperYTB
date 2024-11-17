@@ -69,8 +69,8 @@ module.exports = (env, argv) => {
       ["react-native-sqlite-storage"]: "null",
     },
     output: {
-      filename: isDev ? "[name].js" : "[name].[contenthash].js", // 使用 contenthash 作为文件名的一部分
-      chunkFilename: isDev ? "[name].js" : "[name].[contenthash].js", // 对于动态导入的模块
+      filename: isDev ? "[name].js" : "[name].js", // 使用 contenthash 作为文件名的一部分
+      chunkFilename: isDev ? "[name].js" : "[name].js", // 对于动态导入的模块
       path: path.resolve(__dirname, "../assets/inject"),
     },
     mode: isDev ? "development" : "production",

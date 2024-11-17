@@ -168,7 +168,8 @@ class _MyAppState extends State<MyApp> {
                       source: "console.log('start userscript');",
                       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START),
                   UserScript(
-                      source: skipAD ? contents : "",
+                      source:
+                          skipAD ? contents : "console.log('end userscript');",
                       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END),
                 ]),
                 onWebViewCreated: (controller) {

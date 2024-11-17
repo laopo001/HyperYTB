@@ -10,7 +10,7 @@ const webdavClient = createClient(
     password: "qweQWE1!@#",
   }
 );
-console.log(await webdavClient.getDirectoryContents("/"));
+await webdavClient.getDirectoryContents("/");
 
 if (argv.dev) {
   await within(() => {
@@ -21,6 +21,18 @@ if (argv.dev) {
       $({
         cwd: path.resolve(__dirname, "webview"),
       })`npm run watch`,
+    ]);
+  });
+}
+if (argv.webviewprod) {
+  await within(() => {
+    return Promise.all([
+      $({
+        cwd: path.resolve(__dirname, "webview"),
+      })`npx cross-env NODE_ENV=production myEnv=prod webpack --config webpack.inject.js`,
+      $({
+        cwd: path.resolve(__dirname, "webview"),
+      })`npm run build`,
     ]);
   });
 }
@@ -35,6 +47,7 @@ if (argv.androidprod) {
 }
 
 if (argv.prod) {
+  await $`zx task.mjs --webviewprod`;
   await $`zx task.mjs --androidprod`;
   await uploadDirectory("./dist", "");
 }
