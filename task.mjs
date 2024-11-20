@@ -48,10 +48,24 @@ if (argv.androidprod) {
     { overwrite: true }
   );
 }
+if (argv.iosprod) {
+  // react-native
+  await $`flutter build ipa --release`;
+  let p = path.resolve(__dirname, `./dist/${pack.version}`);
+  await fs.copy(
+    `./build/ios/ipa/flutter_app.ipa`,
+    p + `/flutter-app-${pack.version}.ipa`,
+    {
+      overwrite: true,
+    }
+  );
+}
 
 if (argv.prod) {
   await $`zx task.mjs --webviewprod`;
   await $`zx task.mjs --androidprod`;
+  await $`zx task.mjs --iosprod`;
+
   await uploadDirectory("./dist", "");
 }
 
