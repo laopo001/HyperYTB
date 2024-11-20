@@ -4,6 +4,7 @@ import 'package:audio_bridge/ytb.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:collection';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -19,11 +20,12 @@ class _FirstRouteState extends State<FirstRoute>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-  bool _isHide = true;
-
+  bool isLoading = true;
+  Injects injects = Injects();
   @override
   void initState() {
     super.initState();
+    loadAsset();
     _controller = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
@@ -41,8 +43,29 @@ class _FirstRouteState extends State<FirstRoute>
     super.dispose();
   }
 
+  Future<void> loadAsset() async {
+    injects = Injects(
+        userscript: await rootBundle.loadString('assets/inject/userscript.js',
+            cache: false),
+        ad: await rootBundle.loadString('assets/inject/ad.js', cache: false),
+        backgroundplay: await rootBundle
+            .loadString('assets/inject/backgroundplay.js', cache: false),
+        vconsole: await rootBundle.loadString('assets/inject/vconsole.js',
+            cache: false));
+    // debugPrint(injects.userscript);
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      // 加载中显示的组件
+      return const CircularProgressIndicator();
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('HyperYTB'),
@@ -51,6 +74,17 @@ class _FirstRouteState extends State<FirstRoute>
         child: Column(children: <Widget>[
           Expanded(
               child: InAppWebView(
+            initialUserScripts: UnmodifiableListView<UserScript>([
+              UserScript(
+                  source: "console.log('start userscript');",
+                  injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START),
+              UserScript(
+                  source: injects.vconsole,
+                  injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START),
+              UserScript(
+                  source: "console.log('end userscript');",
+                  injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END),
+            ]),
             initialSettings: InAppWebViewSettings(
               mediaPlaybackRequiresUserGesture: false,
               allowBackgroundAudioPlaying: true,

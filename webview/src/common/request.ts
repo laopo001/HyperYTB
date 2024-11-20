@@ -1,7 +1,6 @@
 import querystring from "querystring";
 import { call } from "./call";
 import { Modal, message } from "antd";
-import { log } from "zx/core";
 import { config } from "./config";
 
 console.log("NODE_ENV: ", process.env.NODE_ENV);

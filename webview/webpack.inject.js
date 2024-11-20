@@ -14,6 +14,9 @@ module.exports = (env, argv) => {
   const isDev = process.env.NODE_ENV !== "production" ? true : false;
   return {
     entry: {
+      ad: "./src/inject/ad",
+      backgroundplay: "./src/inject/backgroundplay",
+      vconsole: "./src/inject/vconsole",
       userscript: "./src/userscript",
     },
     // publicPath: '/',

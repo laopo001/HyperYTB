@@ -54,33 +54,49 @@ class NotificationController {
   }
 }
 
+class Injects {
+  String ad = "";
+  String backgroundplay = "";
+  String vconsole = "";
+  String userscript = "";
+  Injects(
+      {this.ad = "",
+      this.backgroundplay = "",
+      this.vconsole = "",
+      this.userscript = ""});
+}
+
 class _MyAppState extends State<MyApp> {
   InAppWebViewController? webViewController;
-  String contents = "";
+  // String contents = "";
+  Injects injects = Injects();
   bool isLoading = true;
   bool skipAD = false;
   bool backPlay = false;
   Future<void> loadAsset() async {
-    String userscript = await rootBundle
-        .loadString('assets/inject/userscript.js', cache: false);
+    // String userscript = await rootBundle
+    //     .loadString('assets/inject/userscript.js', cache: false);
     // debugPrint("userscript: $userscript");
     var directory = await getApplicationDocumentsDirectory();
     File file = File('${directory.path}/data.json');
 
     if (await file.exists()) {
       var str = await file.readAsString();
-      // debugPrint("settingJSON: $str");
+      debugPrint("settingJSON: $str");
+      injects = Injects(
+          userscript: await rootBundle.loadString('assets/inject/userscript.js',
+              cache: false),
+          ad: await rootBundle.loadString('assets/inject/ad.js', cache: false),
+          backgroundplay: await rootBundle
+              .loadString('assets/inject/backgroundplay.js', cache: false),
+          vconsole: await rootBundle.loadString('assets/inject/vconsole.js',
+              cache: false));
+
       var json = jsonDecode(str);
       setState(() {
-        contents = userscript;
         isLoading = false;
         skipAD = json["skipAD"];
         backPlay = json["backPlay"];
-      });
-    } else {
-      setState(() {
-        contents = userscript;
-        isLoading = false;
       });
     }
   }
@@ -168,8 +184,16 @@ class _MyAppState extends State<MyApp> {
                       source: "console.log('start userscript');",
                       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START),
                   UserScript(
+                      source: injects.vconsole,
+                      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START),
+                  UserScript(
+                      source: backPlay
+                          ? injects.backgroundplay
+                          : "console.log('backPlay false');",
+                      injectionTime: UserScriptInjectionTime.AT_DOCUMENT_START),
+                  UserScript(
                       source:
-                          skipAD ? contents : "console.log('end userscript');",
+                          skipAD ? injects.ad : "console.log('skipAD false');",
                       injectionTime: UserScriptInjectionTime.AT_DOCUMENT_END),
                 ]),
                 onWebViewCreated: (controller) {
@@ -308,33 +332,33 @@ class _MyAppState extends State<MyApp> {
                 onLoadStop: (controller, url) async {
                   debugPrint('onLoadStop: $url');
 
-                  controller.evaluateJavascript(source: '''
-                var __f__ = 0;
-                function addMediaEventListeners() {
-                  const mediaElements = document.querySelectorAll('video, audio');
-                  mediaElements.forEach(media => {
-                    if(media.paused || media.ended){
-                      if(__f__==1){
-                        __f__ = 0;
-                        window.flutter_inappwebview.callHandler('log', 'closeMediaNotification', __f__);
-                        window.flutter_inappwebview.callHandler('closeMediaNotification');
-                      }
-                    } else {
-                      if(__f__==0){
-                        __f__ = 1;
-                        window.flutter_inappwebview.callHandler('log', 'createMediaNotification', __f__);
-                        window.flutter_inappwebview.callHandler('createMediaNotification');
-                      }
-                    }
-                  });
-                }
-          
-                // 调用函数以添加事件监听器
-                setInterval(() => {
-                  addMediaEventListeners();
-                }, 1000);
-                addMediaEventListeners();
-              ''');
+                  //     controller.evaluateJavascript(source: '''
+                  //   var __f__ = 0;
+                  //   function addMediaEventListeners() {
+                  //     const mediaElements = document.querySelectorAll('video, audio');
+                  //     mediaElements.forEach(media => {
+                  //       if(media.paused || media.ended){
+                  //         if(__f__==1){
+                  //           __f__ = 0;
+                  //           window.flutter_inappwebview.callHandler('log', 'closeMediaNotification', __f__);
+                  //           window.flutter_inappwebview.callHandler('closeMediaNotification');
+                  //         }
+                  //       } else {
+                  //         if(__f__==0){
+                  //           __f__ = 1;
+                  //           window.flutter_inappwebview.callHandler('log', 'createMediaNotification', __f__);
+                  //           window.flutter_inappwebview.callHandler('createMediaNotification');
+                  //         }
+                  //       }
+                  //     });
+                  //   }
+
+                  //   // 调用函数以添加事件监听器
+                  //   setInterval(() => {
+                  //     addMediaEventListeners();
+                  //   }, 1000);
+                  //   addMediaEventListeners();
+                  // ''');
 
                   // var result = await controller.evaluateJavascript(
                   //     source:

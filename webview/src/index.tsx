@@ -1,9 +1,9 @@
-import VConsole from "vconsole";
-
 console.log("process.env.myEnv", process.env.myEnv);
-if (process.env.myEnv != "prod") {
-  const vConsole = new VConsole();
-}
+
+// import VConsole from "vconsole";
+// if (process.env.myEnv != "prod") {
+//   const vConsole = new VConsole();
+// }
 
 import { isInit } from "./injectedRN";
 await new Promise((resolve) => {

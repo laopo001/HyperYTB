@@ -1,6 +1,9 @@
 import { createClient } from "webdav";
 import pack from "./webview/package.json" assert { type: "json" };
-usePowerShell();
+
+if (os.type() === "Windows_NT") {
+  usePowerShell();
+}
 $.verbose = true;
 
 const webdavClient = createClient(
@@ -17,7 +20,7 @@ if (argv.dev) {
     return Promise.all([
       $({
         cwd: path.resolve(__dirname, "webview"),
-      })`npx cross-env myEnv=dev webpack -w --config webpack.inject.js`,
+      })`npx cross-env NODE_ENV=development myEnv=dev webpack -w --config webpack.inject.js`,
       $({
         cwd: path.resolve(__dirname, "webview"),
       })`npm run watch`,
